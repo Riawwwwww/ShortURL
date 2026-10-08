@@ -1,84 +1,169 @@
-# Shortly — Short URL & QR Code
+# ShortURL — Short URL & QR Code System
 
-## 1. เตรียมฐานข้อมูล
+ระบบสร้าง Short URL และ QR Code สำหรับจัดเก็บประวัติการสร้างลิงก์และนับจำนวนการเปิดใช้งาน พัฒนาด้วย React, Node.js/Express และ MySQL
 
-สร้างฐานข้อมูลและตาราง `users`, `short_urls`, `click_logs` ตาม SQL ที่ให้ไว้ก่อนหน้านี้
+## ฟังก์ชันของระบบ
 
-สามารถเปิดไฟล์ `database.sql` ใน MySQL Workbench แล้วกด Execute ได้เลย
+- สมัครสมาชิกและเข้าสู่ระบบ
+- กรอก URL ต้นฉบับที่ขึ้นต้นด้วย `http://` หรือ `https://`
+- สร้าง Short URL และ QR Code อัตโนมัติ
+- คลิก Short URL เพื่อ Redirect ไปยัง URL ต้นฉบับ
+- ดาวน์โหลด QR Code และเปิด QR Code เพื่อใช้งานได้
+- บันทึกประวัติ Short URL แยกตามผู้ใช้
+- นับจำนวนครั้งที่มีการเปิด Short URL
+- ออกจากระบบ
 
-## 2. ตั้งค่าเชื่อมต่อ MySQL
+## เทคโนโลยีที่ใช้
 
-คัดลอก `.env.example` เป็น `.env` แล้วแก้ค่า `DB_PASSWORD` ให้ตรงกับรหัสผ่าน MySQL ของเครื่อง
+- Frontend: React 19 + Vite
+- Backend: Node.js + Express
+- Database: MySQL 8.x
+- Database driver: `mysql2`
+- QR Code: `qrcode`
+- Authentication: Express Session + bcrypt
+- UI Font: Mitr
+
+## โครงสร้างโปรเจกต์
+
+```text
+ShortURL/
+├─ frontend/
+│  ├─ index.html
+│  └─ src/
+│     ├─ App.jsx
+│     ├─ api.js
+│     ├─ main.jsx
+│     ├─ styles.css
+│     └─ components/
+│        ├─ AuthPanel.jsx
+│        ├─ CreateUrlForm.jsx
+│        ├─ HistoryTable.jsx
+│        └─ ShortUrlResult.jsx
+├─ backend/
+│  ├─ db.js
+│  └─ server.js
+├─ api/
+│  └─ routes.js
+├─ database.sql
+├─ package.json
+├─ vite.config.mjs
+├─ start.bat
+└─ .env.example
+```
+
+## ฐานข้อมูล
+
+ไฟล์ `database.sql` จะสร้างฐานข้อมูล `shorturl` และตารางหลักดังนี้:
+
+- `users` — ข้อมูลผู้ใช้และรหัสผ่านที่เข้ารหัสแล้ว
+- `short_urls` — URL ต้นฉบับ, Short Code, QR Code และข้อมูลเจ้าของ
+- `click_logs` — ประวัติการเปิด Short URL และจำนวนคลิก
+
+## การติดตั้งและรันในเครื่อง
+
+### 1. ติดตั้ง Dependencies
+
+```bash
+npm install
+```
+
+### 2. สร้างฐานข้อมูล
+
+เปิด `database.sql` ใน MySQL Workbench แล้วกด Execute
+
+### 3. ตั้งค่า Environment Variables
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-ถ้าใช้ MySQL ที่พอร์ตอื่น ให้แก้ `DB_PORT` ด้วย
+แก้ค่าใน `.env` ให้ตรงกับ MySQL ในเครื่อง:
 
-## 3. ติดตั้งและรัน
+```env
+PORT=3000
+APP_BASE_URL=http://localhost:3000
+SESSION_SECRET=เปลี่ยนเป็นข้อความลับของคุณ
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=shorturl
+DB_USER=root
+DB_PASSWORD=รหัสผ่าน MySQL
+```
 
-```powershell
-npm install
+### 4. Build และเริ่มระบบ
+
+```bash
+npm run build
 npm start
 ```
 
 เปิดเว็บที่ <http://localhost:3000>
 
-หรือดับเบิลคลิก `start.bat` เพื่อให้โปรเจกต์ติดตั้ง dependencies และเริ่มเซิร์ฟเวอร์อัตโนมัติ
+หรือใช้ `start.bat` เพื่อเริ่มระบบอัตโนมัติ
 
-## ฟังก์ชันที่มีให้แล้ว
+## คำสั่งที่ใช้บ่อย
 
-- สมัครสมาชิกและเข้าสู่ระบบ
-- สร้าง Short URL จาก URL ต้นฉบับ
-- สร้าง QR Code แบบอัตโนมัติ
-- คัดลอก Short URL และดาวน์โหลด QR Code
-- Redirect ผ่าน `/s/:short_code`
-- บันทึกประวัติการคลิกลง `click_logs`
-- แสดงประวัติ Short URL และจำนวนคลิก
+```bash
+npm run build       # Build React สำหรับ Production
+npm start           # เริ่ม Express server
+npm run dev         # เริ่ม Backend แบบ watch mode
+npm run client:dev  # เปิด Vite Frontend ที่พอร์ต 5173
+```
 
-## โครงสร้าง Frontend (React)
+## API หลัก
 
 ```text
-frontend/
-├─ index.html
-└─ src/
-   ├─ main.jsx                # จุดเริ่มต้น React
-   ├─ App.jsx                 # จัดการ state หลักของเว็บ
-   ├─ api.js                  # เรียก REST API ของ Node.js
-   ├─ styles.css              # CSS ของ React frontend
-   └─ components/
-      ├─ AuthPanel.jsx        # Login และ Register
-      ├─ CreateUrlForm.jsx    # ฟอร์มสร้าง Short URL ในหน้าเดียว
-      ├─ ShortUrlResult.jsx   # ผลลัพธ์ Short URL และ QR Code
-      └─ HistoryTable.jsx     # ประวัติและจำนวนคลิก
-
-├─ dist/                      # ไฟล์ React ที่ build แล้วสำหรับ Express
-
-backend/
-├─ server.js                  # Express server และ static file server
-└─ db.js                      # MySQL connection pool
-
-api/
-└─ routes.js                  # API routes และ Short URL redirect
+POST /api/auth/register  สมัครสมาชิก
+POST /api/auth/login     เข้าสู่ระบบ
+POST /api/auth/logout    ออกจากระบบ
+GET  /api/auth/me        ตรวจสอบผู้ใช้ปัจจุบัน
+GET  /api/health         ตรวจสอบการเชื่อมต่อฐานข้อมูล
+POST /api/urls           สร้าง Short URL และ QR Code
+GET  /api/urls           ดูประวัติ Short URL ของผู้ใช้
+GET  /s/:shortCode       Redirect ไปยัง URL ต้นฉบับและบันทึกจำนวนคลิก
 ```
 
-## คำสั่งสำหรับ React
+## Deploy ด้วย Railway
 
-รัน Frontend แบบ Development:
+โปรเจกต์ใช้ Node.js Service และ MySQL Service อยู่ใน Railway Project เดียวกัน:
 
-```powershell
-npm run client:dev
+```text
+ShortURL (Node.js + React) → MySQL (Railway)
 ```
 
-แล้วเปิด <http://localhost:5173> โดยต้องเปิด Backend ที่พอร์ต 3000 ควบคู่กัน
+ตั้งค่า Service ของเว็บ:
 
-สร้างไฟล์ Production:
-
-```powershell
-npm run build
-npm start
+```text
+Build Command: npm install && npm run build
+Start Command: npm start
 ```
 
-จากนั้นเปิด <http://localhost:3000>
+ตัวแปรสำคัญของ Service `ShortURL`:
+
+```env
+DB_HOST=${{MySQL.MYSQLHOST}}
+DB_PORT=${{MySQL.MYSQLPORT}}
+DB_USER=root
+DB_PASSWORD=${{MySQL.MYSQL_ROOT_PASSWORD}}
+DB_NAME=shorturl
+SESSION_SECRET=เปลี่ยนเป็นข้อความลับที่ปลอดภัย
 ```
+
+นำไฟล์ `database.sql` ไปรันบน MySQL Service ของ Railway ก่อนใช้งาน แล้วตรวจสอบการเชื่อมต่อผ่าน:
+
+```text
+GET https://<railway-domain>/api/health
+```
+
+ผลลัพธ์ที่คาดหวัง:
+
+```json
+{"ok":true,"database":"connected"}
+```
+
+## ความปลอดภัย
+
+- ห้าม Commit ไฟล์ `.env` หรือรหัสผ่านขึ้น GitHub
+- ใช้ `.env.example` สำหรับตัวอย่างชื่อ Variables เท่านั้น
+- ควรปิด Public Access ของ MySQL หลัง Import ฐานข้อมูลเสร็จ
+- ควรใช้ `SESSION_SECRET` ที่เดายากในการ Deploy จริง
