@@ -82,7 +82,7 @@ Copy-Item .env.example .env
 ```env
 PORT=3000
 APP_BASE_URL=http://localhost:3000
-SESSION_SECRET=เปลี่ยนเป็นข้อความลับของคุณ
+SESSION_SECRET=
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_NAME=shorturl
@@ -146,7 +146,7 @@ DB_PORT=${{MySQL.MYSQLPORT}}
 DB_USER=root
 DB_PASSWORD=${{MySQL.MYSQL_ROOT_PASSWORD}}
 DB_NAME=shorturl
-SESSION_SECRET=เปลี่ยนเป็นข้อความลับที่ปลอดภัย
+SESSION_SECRET=
 ```
 
 นำไฟล์ `database.sql` ไปรันบน MySQL Service ของ Railway ก่อนใช้งาน แล้วตรวจสอบการเชื่อมต่อผ่าน:
