@@ -1,0 +1,38 @@
+CREATE DATABASE IF NOT EXISTS shorturl
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+USE shorturl;
+
+CREATE TABLE IF NOT EXISTS users (
+    user_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS short_urls (
+    short_url_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    original_url TEXT NOT NULL,
+    short_code VARCHAR(20) NOT NULL UNIQUE,
+    qr_image_path VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    CONSTRAINT fk_short_urls_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS click_logs (
+    click_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    short_url_id BIGINT UNSIGNED NOT NULL,
+    clicked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ip_address VARCHAR(45) NULL,
+    user_agent TEXT NULL,
+    CONSTRAINT fk_click_logs_short_url
+        FOREIGN KEY (short_url_id) REFERENCES short_urls(short_url_id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
